@@ -49,9 +49,9 @@
 %global golang_version 1.8.1
 %{!?version: %global version 0.0.1}
 %{!?release: %global release 1}
-%global package_name openshift-monitor-project-lifecycle
+%global package_name openshift-monitor-imagestream-import
 %global product_name OpenShift Monitor Project Lifecycle
-%global import_path github.com/openshift/monitor-project-lifecycle
+%global import_path github.com/openshift/monitor-imagestream-import
 
 Name:           %{package_name}
 Version:        %{version}

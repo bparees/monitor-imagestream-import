@@ -1,0 +1,99 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: monitor-imagestream-import
+parameters:
+- name: NAMESPACE
+  value: imagestream-smoketest
+objects:
+  - kind: Service
+    apiVersion: v1
+    metadata: 
+      name: monitor-imagestream-import
+      labels:
+        app: monitor-imagestream-import
+      annotations:
+        service.alpha.openshift.io/serving-cert-secret-name: monitor-imagestream-import-secret
+    spec: 
+      selector: 
+        app: monitor-imagestream-import
+      ports:
+      - name: web
+        protocol: TCP
+        port: 8443
+        targetPort: web
+  - kind: Deployment
+    apiVersion: extensions/v1beta1
+    metadata:
+      name: monitor-imagestream-import
+    spec:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: monitor-imagestream-import
+            version: 1.0.0
+        spec:
+          containers:
+          - name: monitor-imagestream-import
+            image: docker.io/bparees/openshift-monitor-imagestream-import
+            imagePullPolicy: IfNotPresent
+            args: ["--failure-percent","0"]
+            ports:
+            - name: web
+              containerPort: 8443
+              protocol: TCP
+            volumeMounts:
+              - name: tls-volume
+                mountPath: /etc/tls-volume
+                readOnly: true
+          volumes:
+            - name: tls-volume
+              secret:
+                secretName: monitor-imagestream-import-secret
+          resources:
+            requests:
+              memory: 4Mi
+          readinessProbe:
+            timeoutSeconds: 10,
+            initialDelaySeconds: 30,
+            httpGet:
+              path: /metrics
+              port: 8443
+              scheme: HTTPS
+          livenessProbe:
+            timeoutSeconds: 10,
+            initialDelaySeconds: 30,
+            httpGet:
+              path: /healthz
+              port: 8443
+              scheme: HTTPS
+
+
+  - kind: Role
+    apiVersion: rbac.authorization.k8s.io/v1beta1
+    metadata:
+      name: imagestream-import-tester
+    rules:
+    - apiGroups:
+      - ""
+      - image.openshift.io
+      resources:
+      - imagestreams
+      - imagestreamtags
+      verbs:
+      - get
+      - create
+      - update
+      - delete
+
+  - kind: RoleBinding
+    apiVersion: v1
+    metadata:
+      name: imagestream-importer
+    subjects:
+      - kind: ServiceAccount
+        name: default
+    roleRef: 
+      name: imagestream-import-tester
+      namespace: ${NAMESPACE}
