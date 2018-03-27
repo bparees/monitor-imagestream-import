@@ -1,0 +1,256 @@
+hash: 8cce9a43954eefb5b24bee32cd453f39bba85251ac894493a38ebe346259f5be
+updated: 2018-03-27T17:18:42.970106936-04:00
+imports:
+- name: github.com/beorn7/perks
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
+  subpackages:
+  - quantile
+- name: github.com/davecgh/go-spew
+  version: 782f4967f2dc4564575ca782fe2d04090b5faca8
+  subpackages:
+  - spew
+- name: github.com/docker/distribution
+  version: edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c
+  subpackages:
+  - digestset
+  - reference
+- name: github.com/emicklei/go-restful
+  version: ff4f55a206334ef123e4f79bbf348980da81ca46
+  subpackages:
+  - log
+- name: github.com/ghodss/yaml
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/go-openapi/jsonpointer
+  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+- name: github.com/go-openapi/jsonreference
+  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+- name: github.com/go-openapi/spec
+  version: 7abd5745472fff5eb3685386d5fb8bf38683154d
+- name: github.com/go-openapi/swag
+  version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
+- name: github.com/gogo/protobuf
+  version: 49944b4a4b085da44c43d4b233ea40787396371f
+  subpackages:
+  - proto
+  - sortkeys
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/golang/protobuf
+  version: bbd03ef6da3a115852eaf24c8a1c46aeb39aa175
+  subpackages:
+  - proto
+- name: github.com/google/btree
+  version: 7d79101e329e5a3adf994758c578dab82b90c017
+- name: github.com/google/gofuzz
+  version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
+- name: github.com/gregjones/httpcache
+  version: 787624de3eb7bd915c329cba748687a3b22666a6
+  subpackages:
+  - diskcache
+- name: github.com/howeyc/gopass
+  version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
+- name: github.com/imdario/mergo
+  version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
+- name: github.com/juju/ratelimit
+  version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
+- name: github.com/mailru/easyjson
+  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
+  subpackages:
+  - buffer
+  - jlexer
+  - jwriter
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
+  subpackages:
+  - pbutil
+- name: github.com/opencontainers/go-digest
+  version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
+- name: github.com/openshift/api
+  version: dca24d1902afee9d2be02425a2d7c9f910063631
+  subpackages:
+  - image/docker10
+  - image/dockerpre012
+  - image/v1
+- name: github.com/openshift/client-go
+  version: 5039916f9ac015e14899959fb6fc62945578657e
+  subpackages:
+  - image/clientset/versioned/scheme
+  - image/clientset/versioned/typed/image/v1
+- name: github.com/openshift/origin
+  version: bd173765477ba5a620311eb6bfb5559587920c4a
+  subpackages:
+  - tools/junitreport/pkg/api
+  - tools/junitreport/pkg/builder
+  - tools/junitreport/pkg/builder/flat
+  - tools/junitreport/pkg/builder/nested
+  - tools/junitreport/pkg/cmd
+  - tools/junitreport/pkg/parser
+  - tools/junitreport/pkg/parser/gotest
+  - tools/junitreport/pkg/parser/oscmd
+  - tools/junitreport/pkg/parser/stack
+- name: github.com/peterbourgon/diskv
+  version: 5f041e8faa004a95c88a202771f4cc3e991971e6
+- name: github.com/prometheus/client_golang
+  version: d49167c4b9f3c4451707560c5c71471ff5291aaa
+  subpackages:
+  - prometheus
+- name: github.com/prometheus/client_model
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  subpackages:
+  - xfs
+- name: github.com/PuerkitoBio/purell
+  version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
+- name: github.com/PuerkitoBio/urlesc
+  version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/spf13/pflag
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: github.com/ugorji/go
+  version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
+  subpackages:
+  - codec
+- name: golang.org/x/crypto
+  version: 81e90905daefcd6fd217b62423c0908922eadb30
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/net
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  subpackages:
+  - html
+  - html/atom
+  - http2
+  - http2/hpack
+  - idna
+  - lex/httplex
+  - websocket
+- name: golang.org/x/sys
+  version: 95c6576299259db960f6c5b9b69ea52422860fce
+  subpackages:
+  - unix
+  - windows
+- name: golang.org/x/text
+  version: b19bf474d317b857955b12035d2c5acb57ce8b01
+  subpackages:
+  - cases
+  - internal
+  - internal/tag
+  - language
+  - runes
+  - secure/bidirule
+  - secure/precis
+  - transform
+  - unicode/bidi
+  - unicode/norm
+  - width
+- name: gopkg.in/inf.v0
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: gopkg.in/yaml.v2
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+- name: k8s.io/api
+  version: 4a80308ab64deb462259d3d96a1d7825f0bb875e
+  repo: git@github.com:openshift/kubernetes-api
+  subpackages:
+  - core/v1
+- name: k8s.io/apiextensions-apiserver
+  version: 8cdd78b7e067060cf564be740dd58e77f0e861c3
+  repo: git@github.com:openshift/kubernetes-apiextensions-apiserver
+  subpackages:
+  - pkg/features
+- name: k8s.io/apimachinery
+  version: b6fcf44e3f3db22881a94b089a171fad73b30b19
+  repo: git@github.com:openshift/kubernetes-apimachinery
+  subpackages:
+  - pkg/api/errors
+  - pkg/api/resource
+  - pkg/apis/meta/internalversion
+  - pkg/apis/meta/v1
+  - pkg/apis/meta/v1alpha1
+  - pkg/conversion
+  - pkg/conversion/queryparams
+  - pkg/fields
+  - pkg/labels
+  - pkg/runtime
+  - pkg/runtime/schema
+  - pkg/runtime/serializer
+  - pkg/runtime/serializer/json
+  - pkg/runtime/serializer/protobuf
+  - pkg/runtime/serializer/recognizer
+  - pkg/runtime/serializer/streaming
+  - pkg/runtime/serializer/versioning
+  - pkg/selection
+  - pkg/types
+  - pkg/util/clock
+  - pkg/util/diff
+  - pkg/util/errors
+  - pkg/util/framer
+  - pkg/util/intstr
+  - pkg/util/json
+  - pkg/util/net
+  - pkg/util/runtime
+  - pkg/util/sets
+  - pkg/util/validation
+  - pkg/util/validation/field
+  - pkg/util/wait
+  - pkg/util/yaml
+  - pkg/version
+  - pkg/watch
+  - third_party/forked/golang/reflect
+- name: k8s.io/apiserver
+  version: fbcb407558281c12d3f4eca5cb3b2819de1000d0
+  repo: git@github.com:openshift/kubernetes-apiserver
+  subpackages:
+  - pkg/features
+  - pkg/util/feature
+- name: k8s.io/client-go
+  version: 2ef70d1cd65223642ac2963c201823e01fc725b9
+  repo: git@github.com:openshift/kubernetes-client-go
+  subpackages:
+  - pkg/version
+  - rest
+  - rest/watch
+  - tools/auth
+  - tools/clientcmd
+  - tools/clientcmd/api
+  - tools/clientcmd/api/latest
+  - tools/clientcmd/api/v1
+  - tools/metrics
+  - transport
+  - util/cert
+  - util/flowcontrol
+  - util/homedir
+  - util/integer
+- name: k8s.io/code-generator
+  version: 4a42db67724ec4bf63a6ff162e97543e0e312770
+  repo: git@github.com:openshift/kubernetes-code-generator
+- name: k8s.io/kube-aggregator
+  version: 7d63ec809118514cf7bd8ca10db7424330fcd1f5
+  repo: git@github.com:openshift/kube-aggregator
+- name: k8s.io/kube-openapi
+  version: 39a7bf85c140f972372c2a0d1ee40adbf0c8bfe1
+  subpackages:
+  - pkg/common
+- name: k8s.io/kubernetes
+  version: 33c4cfef9672d409e9799dd13b93c2faf3caec75
+  repo: git@github.com:openshift/kubernetes
+  subpackages:
+  - pkg/apis/autoscaling
+  - pkg/apis/core
+  - pkg/apis/core/v1
+  - pkg/apis/extensions
+  - pkg/apis/networking
+  - pkg/features
+  - pkg/util/parsers
+  - pkg/util/pointer
+- name: k8s.io/metrics
+  version: ff454b3dae7059eae17d532cc35bfc478e20a88e
+  repo: git@github.com:openshift/kubernetes-metrics
+testImports: []
