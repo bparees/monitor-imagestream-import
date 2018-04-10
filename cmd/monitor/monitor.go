@@ -3,97 +3,175 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/golang/glog"
 	"math/rand"
 	"net/http"
 	"time"
 
-	projectv1client "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
 	"github.com/prometheus/client_golang/prometheus"
+
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apiserver/pkg/util/logs"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	//kapiv1 "k8s.io/kubernetes/pkg/apis/core/v1"
+
+	//projectv1client "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
+	imageapiv1 "github.com/openshift/api/image/v1"
+	imagev1client "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
+)
+
+const (
+	createFailure                 = "CreateFailure"
+	deleteFailure                 = "DeleteFailure"
+	getFailure                    = "GetFailure"
+	importFailure                 = "ImportFailure"
+	unknownFailure                = "UnknownFailure"
+	artificialFailure             = "ArtificialFailure"
+	defaultTestImageRepository    = "docker.io/openshift/jenkins-2-centos7"
+	defaultTestImageRepositoryTag = "latest"
+	defaultTestImageStream        = "importtest"
+	defaultTestImageStreamTag     = "tag"
+	defaultFailurePercent         = 0
+	defaultInterval               = 60
+)
+
+var (
+	testImageRepository, testImageRepositoryTag, testImageStream, testImageStreamTag *string
+	interval, failurePercent                                                         *int
 )
 
 func main() {
-	addr := flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
+	logs.InitLogs()
+	addr := flag.String("listen-address", ":8443", "The address to listen on for HTTPS requests.")
+	testImageRepository = flag.String("import-repository", defaultTestImageRepository, "The docker image repository to attempt to import")
+	testImageRepositoryTag = flag.String("import-repository-tag", defaultTestImageRepositoryTag, "The docker image repository tag to attempt to import")
+	testImageStream = flag.String("imagestream", defaultTestImageStream, "The imagestream name to create/import into")
+	testImageStreamTag = flag.String("imagestreamtag", defaultTestImageStreamTag, "The imagestream tag name to create/import into")
+	failurePercent = flag.Int("failure-percent", defaultFailurePercent, "Percent of test runs to forcibly fail")
+	interval = flag.Int("interval", defaultInterval, "Interval between test runs, in seconds")
+
 	flag.Parse()
 
 	http.HandleFunc("/healthz", handleHealthz)
 	http.Handle("/metrics", prometheus.Handler())
 
-	appCreateLatency := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "app_create_latency_seconds",
-			Help:    "The latency of various app creation steps.",
-			Buckets: []float64{1, 10, 60, 3 * 60, 5 * 60},
+	imageStreamImportLastRun := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "imagestream_import_last_run",
+			Help: "Indicates the last time the ImageStream import test ran and the result.",
 		},
-		[]string{"step"},
+		[]string{"result", "reason"},
 	)
-	prometheus.MustRegister(appCreateLatency)
+	prometheus.MustRegister(imageStreamImportLastRun)
 
-	go http.ListenAndServe(*addr, nil)
+	rand.Seed(time.Now().UTC().UnixNano())
 
-	go runAppCreateSim(appCreateLatency, 1*time.Second)
+	//go http.ListenAndServe(*addr, nil)
+	go http.ListenAndServeTLS(*addr, "/etc/tls-volume/tls.crt", "/etc/tls-volume/tls.key", nil)
+
+	go runImageStreamImport(imageStreamImportLastRun, time.Duration(*interval)*time.Second)
 
 	select {}
-}
-
-// Creates a rest config object that is used for other client calls.
-// TODO: we should probably not panic, instead expose this as an error in prometheus.
-func getRestConfig() *restclient.Config {
-	// Instantiate loader for kubeconfig file.
-	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{},
-	)
-
-	// Get a rest.Config from the kubeconfig file.  This will be passed into all
-	// the client objects we create.
-	restconfig, err := kubeconfig.ClientConfig()
-	if err != nil {
-		panic(err)
-	}
-
-	return restconfig
-}
-
-// Cleans up all objects that this monitoring command creates
-// TODO: Add prometheus metrics for timing and errors.
-// TODO: Don't panic as that would kill the prometheus end point as well.
-func cleanupWorkspace(project string, restconfig *restclient.Config) {
-	// Create an OpenShift project/v1 client.
-	projectclient, err := projectv1client.NewForConfig(restconfig)
-	if err != nil {
-		panic(err)
-	}
-
-	// Delete the project that contains the kube resources we've created
-	err = projectclient.Projects().Delete(project, &metav1.DeleteOptions{})
-	if err != nil {
-		panic(err)
-	}
 }
 
 func handleHealthz(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "ok")
 }
 
-func runAppCreateSim(metric *prometheus.HistogramVec, interval time.Duration) {
-	steps := map[string]struct {
-		min time.Duration
-		max time.Duration
-	}{
-		"new-app": {min: 1 * time.Second, max: 5 * time.Second},
-		"build":   {min: 1 * time.Minute, max: 5 * time.Minute},
-		"deploy":  {min: 1 * time.Minute, max: 5 * time.Minute},
-		"expose":  {min: 10 * time.Second, max: 1 * time.Minute},
+// Creates a rest config object that is used for other client calls.
+func getRestConfig() *restclient.Config {
+
+	clientConfig, err := restclient.InClusterConfig()
+	if err != nil {
+		panic(err)
 	}
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	return clientConfig
+}
+
+func runImageStreamImport(lastran *prometheus.GaugeVec, interval time.Duration) {
+	imageclient, err := imagev1client.NewForConfig(getRestConfig())
+
+	imageStream := &imageapiv1.ImageStream{
+		ObjectMeta: metav1.ObjectMeta{Name: *testImageStream},
+		Spec: imageapiv1.ImageStreamSpec{
+			DockerImageRepository: "",
+			Tags: []imageapiv1.TagReference{
+				{
+					Name: *testImageStreamTag,
+					From: &corev1.ObjectReference{
+						Kind: "DockerImage",
+						Name: *testImageRepository + ":" + *testImageRepositoryTag,
+					},
+				},
+			},
+		},
+	}
+
+	kc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	ns, _, err := kc.Namespace()
+	if err != nil {
+		lastran.WithLabelValues("failed", createFailure).SetToCurrentTime()
+		glog.Errorf("imageStream creation failed while retrieving client namespace with error: %v", err)
+		return
+	}
+	first := true
 	for {
-		for step, r := range steps {
-			latency := rng.Int63n(int64(r.max)-int64(r.min)) + int64(r.min)
-			metric.With(prometheus.Labels{"step": step}).Observe(float64(latency / int64(time.Second)))
+		if !first {
+			time.Sleep(interval)
+		} else {
+			first = false
 		}
-		time.Sleep(interval)
+		glog.V(2).Infoln("Running imagestream import smoke test")
+
+		if *failurePercent > 0 && rand.Int31n(101) < int32(*failurePercent) {
+			glog.Infoln("Forced failure")
+			lastran.WithLabelValues("failed", artificialFailure).SetToCurrentTime()
+			continue
+		}
+		// Start with a clean slate.
+		err = imageclient.ImageStreams(ns).Delete(imageStream.Name, nil)
+		if err != nil && !apierrors.IsNotFound(err) {
+			lastran.WithLabelValues("failed", deleteFailure).SetToCurrentTime()
+			glog.Errorf("imagestream deletion failed with error=%v", err)
+			continue
+		}
+		_, err = imageclient.ImageStreams(ns).Create(imageStream)
+		if err != nil {
+			lastran.WithLabelValues("failed", createFailure).SetToCurrentTime()
+			glog.Errorf("imagestream creation failed with error: %v", err)
+			continue
+		}
+
+		err = wait.Poll(time.Second, 60*time.Second, func() (bool, error) {
+			_, err := imageclient.ImageStreamTags(ns).Get(*testImageStream+":"+*testImageStreamTag, metav1.GetOptions{})
+			if err == nil {
+				return true, nil
+			}
+			if apierrors.IsNotFound(err) {
+				return false, nil
+			}
+			lastran.WithLabelValues("failed", getFailure).SetToCurrentTime()
+			return false, err
+		})
+		if err == wait.ErrWaitTimeout {
+			lastran.WithLabelValues("failed", importFailure).SetToCurrentTime()
+			glog.Errorf("imagestream import timed out: %v, current imagestream is: %v", err, imageStream)
+			continue
+		} else if err != nil {
+			lastran.WithLabelValues("failed", unknownFailure).SetToCurrentTime()
+			glog.Errorf("imagestream import failed: %v, current imagestream is: %v", err, imageStream)
+			continue
+		}
+		glog.V(2).Infof("Import successful")
+		lastran.WithLabelValues("success", "").SetToCurrentTime()
 	}
+
 }

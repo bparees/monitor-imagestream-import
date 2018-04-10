@@ -1,0 +1,26 @@
+*https support
+
+sort out building/rebuilding
+
+*configurability
+
+test w/ real prometheus
+  - enable scraping
+  - configure alerts
+
+
+queries:
+
+# hasn't succeeded in last 5 minutes
+count(time() - imagestream_import_last_run{result="success"} > 300)
+
+# failures in last X minutes
+count_over_time(imagestream_import_last_run{result="failed"}[30m])
+
+- use counter and histogram?
+- dependency on infrastructure
+- handling of various api failures
+- use in cluster config?
+- creating a project for each run?
+- install?
+

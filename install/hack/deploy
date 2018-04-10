@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-oc project openshift
-oc apply -f manifests
+oc new-project imagestream-smoketest
+oc new-app -f install/manifests/monitor-imagestream-smoketest.yaml -p NAMESPACE=imagestream-smoketest
